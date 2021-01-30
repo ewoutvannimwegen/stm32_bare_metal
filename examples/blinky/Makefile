@@ -179,10 +179,10 @@ flash: all
 	openocd -f interface/stlink.cfg -f target/stm32l4x.cfg -c "program $(BUILD_DIR)/$(TARGET).elf verify reset exit"
 
 debug:
-	openocd -f interface/stlink-v2-1.cfg -f target/stm32l4x.cfg -c "init; reset halt"
+	openocd -f interface/stlink.cfg -f target/stm32l4x.cfg -c "init; reset halt"
 
 erase:
-	openocd -f interface/stlink-v2-1.cfg -f target/stm32l4x.cfg -c "init; reset halt; stm32l4x mass_erase 0; exit"
+	openocd -f interface/stlink.cfg -f target/stm32l4x.cfg -c "init; reset halt; stm32l4x mass_erase 0; exit"
 
 #######################################
 # dependencies
