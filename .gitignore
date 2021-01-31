@@ -1,2 +1,4 @@
 .cortex*
 examples/**/build
+examples/**/compile_commands.json
+examples/**/.clangd/
