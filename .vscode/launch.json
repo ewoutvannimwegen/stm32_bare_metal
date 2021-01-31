@@ -33,6 +33,17 @@
       "device": "STM32L476RG",
       "configFiles": ["interface/stlink.cfg", "target/stm32l4x.cfg"],
       "svdFile": "./STM32L4x6.svd"
+    },
+    {
+      "name": "multi_adc2dma",
+      "cwd": "${workspaceRoot}",
+      "executable": "examples/multi_adc2dma/build/m4_fw.elf",
+      "request": "launch",
+      "type": "cortex-debug",
+      "servertype": "openocd",
+      "device": "STM32L476RG",
+      "configFiles": ["interface/stlink.cfg", "target/stm32l4x.cfg"],
+      "svdFile": "./STM32L4x6.svd"
     }
   ]
 }
