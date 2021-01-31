@@ -1,7 +1,6 @@
 #include "stm32l476xx.h"
 
-int main(void) {
-	RCC->CR = 0; // Clear control register
+int main(void) {	
 	RCC->CR |= RCC_CR_HSION; // HSI clock enabled
 	while(!(RCC->CR & RCC_CR_HSIRDY)); // Wait for HSI ready
 
@@ -17,6 +16,9 @@ int main(void) {
 
 	RCC->CFGR |= RCC_CFGR_SW_HSI; // HSI as system clock
 	while(!(RCC->CFGR & RCC_CFGR_SWS_HSI)); 
+
+	SystemCoreClockUpdate(); 
+
 	RCC->AHB2ENR |= RCC_AHB2ENR_GPIOAEN; // GPIOA clock enabled
 
 	/* LD2 [PA5] */
@@ -26,7 +28,7 @@ int main(void) {
 	GPIOA->MODER |= GPIO_MODER_MODE5_0; // Output
 
 	while(1) {
-		for(int i = 0; i < SystemCoreClock; i++); // Sleep 1 sec
+		for(int i = 0; i < (SystemCoreClock/8); i++); // Sleep 1 sec
 		GPIOA->ODR ^= GPIO_ODR_OD5; // Toggle LD2
 	}
 }
