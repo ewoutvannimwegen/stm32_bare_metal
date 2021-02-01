@@ -1,7 +1,7 @@
 {
     "configurations": [
         {
-            "name": "default",
+            "name": "windows",
             "includePath": [
                 "Drivers/CMSIS/Device/ST/STM32L4xx/Include",
                 "Drivers/CMSIS/Include"

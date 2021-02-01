@@ -13,6 +13,17 @@
       "svdFile": "./STM32L4x6.svd"
     },
     {
+      "name": "blinky_hardware",
+      "cwd": "${workspaceRoot}",
+      "executable": "examples/blinky_hardware/build/m4_fw.elf",
+      "request": "launch",
+      "type": "cortex-debug",
+      "servertype": "openocd",
+      "device": "STM32L476RG",
+      "configFiles": ["interface/stlink.cfg", "target/stm32l4x.cfg"],
+      "svdFile": "./STM32L4x6.svd"
+    },
+    {
       "name": "isr",
       "cwd": "${workspaceRoot}",
       "executable": "examples/isr/build/m4_fw.elf",
