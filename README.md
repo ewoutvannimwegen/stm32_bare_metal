@@ -1,4 +1,4 @@
-#Bare metal STM32
+# Bare metal STM32 development setup
 
 Develop code for STM32 boards with a very minimal code base.
 I've added some of my own examples for the L476RG (cortex m4) board. These examples are 100% compatible with all platforms. Just install the following tools for your system.
