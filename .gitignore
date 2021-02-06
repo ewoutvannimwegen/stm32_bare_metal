@@ -1,4 +1,4 @@
 .cortex*
-examples/**/build
-examples/**/compile_commands.json
-examples/**/.clangd/
+L476RG/**/build
+L476RG/**/compile_commands.json
+L476RG/**/.clangd/
