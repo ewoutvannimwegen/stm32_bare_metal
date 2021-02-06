@@ -1,4 +1,3 @@
-Blinky LED using LD2 [PA5] which toggles every 1 sec.
-Timer 2 channel 1 is configured as a PWM out for LD2 [AF1].
-This way the LED is switch on and off by hardware.
-HSI16 is used as clock source for the system.
+USART2 TX [PA2] and RX [PA3] ST Link 
+
+Create an interrupt service routine that is triggered when the RX buffer is changed. The RX buffer is copied to the TX buffer. The program sends the data back over the TX line and waits until the transmission is complete. 
