@@ -1,7 +1,7 @@
 {
     "configurations": [
         {
-            "name": "windows",
+            "name": "STM32L476RG Windows",
             "includePath": [
                 "Drivers/CMSIS/Device/ST/STM32L4xx/Include",
                 "Drivers/CMSIS/Include"
@@ -24,6 +24,41 @@
                 "INSTRUCTION_CACHE_ENABLE=1",
                 "DATA_CACHE_ENABLE=1",
                 "STM32L476xx"
+            ],
+            "compilerPath": "${env:ARM_DIR}/arm-none-eabi-gcc.exe",
+            "intelliSenseMode": "gcc-arm",
+            "compilerArgs": [
+                "-mcpu=cortex-m4",
+                "-mthumb"
+            ],
+            "cStandard": "c11",
+            "cppStandard": "c++17"
+        },
+        {
+            "name": "STM32MP157C-DK2 Windows",
+            "includePath": [
+                "Drivers/CMSIS/Device/ST/STM32MP1xx/Include",
+                "Drivers/CMSIS/Include"
+            ],
+            "defines": [
+                "_DEBUG",
+                "UNICODE",
+                "_UNICODE",
+                "HSE_VALUE=8000000",
+                "HSE_STARTUP_TIMEOUT=100",
+                "LSE_STARTUP_TIMEOUT=5000",
+                "LSE_VALUE=32768",
+                "MSI_VALUE=4000000",
+                "EXTERNALSAI1_CLOCK_VALUE=2097000",
+                "EXTERNALSAI2_CLOCK_VALUE=2097000",
+                "HSI_VALUE=16000000",
+                "LSI_VALUE=32000",
+                "CSI_VALUE=1",
+                "VDD_VALUE=3300",
+                "PREFETCH_ENABLE=1",
+                "INSTRUCTION_CACHE_ENABLE=1",
+                "DATA_CACHE_ENABLE=1",
+                "STM32MP157xx"
             ],
             "compilerPath": "${env:ARM_DIR}/arm-none-eabi-gcc.exe",
             "intelliSenseMode": "gcc-arm",

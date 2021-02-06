@@ -36,12 +36,12 @@ BUILD_DIR = build
 ######################################
 # C sources
 C_SOURCES =  \
-Core/Src/main.c \
-Core/Src/../system_stm32l4xx.c
+main.c \
+../system_stm32mp1xx.c
 
 # ASM sources
 ASM_SOURCES =  \
-../startup_stm32l476xx.s
+../startup_stm32mp157c_cm4.s
 
 #######################################
 # binaries
@@ -93,11 +93,13 @@ C_DEFS =  \
 -DEXTERNALSAI2_CLOCK_VALUE=2097000 \
 -DHSI_VALUE=16000000 \
 -DLSI_VALUE=32000 \
+-DCSI_VALUE=1 \ 
 -DVDD_VALUE=3300 \
 -DPREFETCH_ENABLE=1 \
 -DINSTRUCTION_CACHE_ENABLE=1 \
 -DDATA_CACHE_ENABLE=1 \
--DSTM32L476xx
+-DSTM32MP157xx \
+-DCORE_CM4
 
 
 # AS includes
@@ -105,7 +107,7 @@ AS_INCLUDES =
 
 # C includes
 C_INCLUDES =  \
--I ../../Drivers/CMSIS/Device/ST/STM32L4xx/Include \
+-I ../../Drivers/CMSIS/Device/ST/STM32MP1xx/Include \
 -I ../../Drivers/CMSIS/Include 
 
 # compile gcc flags
@@ -126,7 +128,7 @@ CFLAGS += -MMD -MP -MF"$(@:%.o=%.d)"
 # LDFLAGS
 #######################################
 # link script
-LDSCRIPT = ../STM32L476RGTx_FLASH.ld
+LDSCRIPT = ../stm32mp15xx_m4.ld
 
 # libraries
 LIBS = -lc -lm -lnosys 
@@ -176,13 +178,13 @@ clean:
 # openocd flash
 #######################################
 flash: all
-	openocd -f interface/stlink.cfg -f target/stm32l4x.cfg -c "program $(BUILD_DIR)/$(TARGET).elf verify reset exit"
+	openocd -f interface/stlink.cfg -f target/stm32mp15x.cfg -c "program $(BUILD_DIR)/$(TARGET).elf verify reset exit"
 
 debug:
-	openocd -f interface/stlink.cfg -f target/stm32l4x.cfg -c "init; reset halt"
+	openocd -f interface/stlink.cfg -f target/stm32mp15x.cfg -c "init; reset halt"
 
 erase:
-	openocd -f interface/stlink.cfg -f target/stm32l4x.cfg -c "init; reset halt; stm32l4x mass_erase 0; exit"
+	openocd -f interface/stlink.cfg -f target/stm32mp15x.cfg -c "init; reset halt; stm32mp15x mass_erase 0; exit"
 
 #######################################
 # dependencies

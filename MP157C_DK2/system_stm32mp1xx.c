@@ -24,11 +24,11 @@
   *
   * @attention
   *
-  * <h2><center>&copy; Copyright (c) 2019 STMicroelectronics. 
+  * <h2><center>&copy; Copyright (c) 2019 STMicroelectronics.
   * All rights reserved.</center></h2>
   *
   * This software component is licensed by ST under BSD 3-Clause license,
-  * the "License"; You may not use this file except in compliance with the 
+  * the "License"; You may not use this file except in compliance with the
   * License. You may obtain a copy of the License at:
   *                       opensource.org/licenses/BSD-3-Clause
   *
@@ -48,7 +48,7 @@
   * @{
   */
 
-#include "stm32mp1xx_hal.h"
+//#include "stm32mp1xx_hal.h"
 
 /**
   * @}
@@ -77,7 +77,7 @@
      Internal SRAM. */
 /* #define VECT_TAB_SRAM */
 #define VECT_TAB_OFFSET  0x00 /*!< Vector Table base offset field. 
-                                   This value must be a multiple of 0x200. */
+                                   This value must be a multiple of 0x400. */
 /******************************************************************************/
 
 /**
@@ -225,7 +225,7 @@ void SystemCoreClockUpdate (void)
     pll3m = ((RCC->PLL3CFGR1 & RCC_PLL3CFGR1_DIVM3) >> RCC_PLL3CFGR1_DIVM3_Pos) + 1U;
     pll3fracen = (RCC->PLL3FRACR & RCC_PLL3FRACR_FRACLE) >> 16U;
     fracn1 = (float)(pll3fracen * ((RCC->PLL3FRACR & RCC_PLL3FRACR_FRACV) >> 3U));
-    pll3vco = (float)((float)((RCC->PLL3CFGR1 & RCC_PLL3CFGR1_DIVN) + 1U) + (fracn1/(float) 0x1FFFU));
+    pll3vco = (float)((float)((RCC->PLL3CFGR1 & RCC_PLL3CFGR1_DIVN) + 1U) + (fracn1 / (float) 0x1FFF));
 
     if (pll3m != 0U)
     {
@@ -264,7 +264,7 @@ void SystemCoreClockUpdate (void)
 #ifdef DATA_IN_ExtSRAM
 /**
   * @brief  Setup the external memory controller.
-  *         Called in startup_stm32L4xx.s before jump to main.
+  *         Called in startup_stm32mp15xx.s before jump to main.
   *         This function configures the external SRAM mounted on Eval boards
   *         This SRAM will be used as program data memory (including heap and stack).
   * @param  None
