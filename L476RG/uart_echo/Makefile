@@ -41,7 +41,7 @@ system_stm32l4xx.c
 
 # ASM sources
 ASM_SOURCES =  \
-startup_stm32l476xx.s
+../startup_stm32l476xx.s
 
 #######################################
 # binaries

@@ -1,6 +1,6 @@
 /**
   ******************************************************************************
-  * @file      startup_stm32l476xx.s
+  * @file      ../startup_stm32l476xx.s
   * @author    MCD Application Team
   * @brief     STM32L476xx devices vector table GCC toolchain.
   *            This module performs:

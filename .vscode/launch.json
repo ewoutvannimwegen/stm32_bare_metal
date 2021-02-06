@@ -4,79 +4,13 @@
     {
       "name": "blinky",
       "cwd": "${workspaceRoot}",
-      "executable": "examples/blinky/build/m4_fw.elf",
+      "executable": "L476RG/blinky/build/m4_fw.elf",
       "request": "launch",
       "type": "cortex-debug",
       "servertype": "openocd",
       "device": "STM32L476RG",
       "configFiles": ["interface/stlink.cfg", "target/stm32l4x.cfg"],
-      "svdFile": "./STM32L4x6.svd"
-    },
-    {
-      "name": "blinky_hardware",
-      "cwd": "${workspaceRoot}",
-      "executable": "examples/blinky_hardware/build/m4_fw.elf",
-      "request": "launch",
-      "type": "cortex-debug",
-      "servertype": "openocd",
-      "device": "STM32L476RG",
-      "configFiles": ["interface/stlink.cfg", "target/stm32l4x.cfg"],
-      "svdFile": "./STM32L4x6.svd"
-    },
-    {
-      "name": "isr",
-      "cwd": "${workspaceRoot}",
-      "executable": "examples/isr/build/m4_fw.elf",
-      "request": "launch",
-      "type": "cortex-debug",
-      "servertype": "openocd",
-      "device": "STM32L476RG",
-      "configFiles": ["interface/stlink.cfg", "target/stm32l4x.cfg"],
-      "svdFile": "./STM32L4x6.svd"
-    },
-    {
-      "name": "single_adc",
-      "cwd": "${workspaceRoot}",
-      "executable": "examples/single_adc/build/m4_fw.elf",
-      "request": "launch",
-      "type": "cortex-debug",
-      "servertype": "openocd",
-      "device": "STM32L476RG",
-      "configFiles": ["interface/stlink.cfg", "target/stm32l4x.cfg"],
-      "svdFile": "./STM32L4x6.svd"
-    },
-    {
-      "name": "multi_adc2dma",
-      "cwd": "${workspaceRoot}",
-      "executable": "examples/multi_adc2dma/build/m4_fw.elf",
-      "request": "launch",
-      "type": "cortex-debug",
-      "servertype": "openocd",
-      "device": "STM32L476RG",
-      "configFiles": ["interface/stlink.cfg", "target/stm32l4x.cfg"],
-      "svdFile": "./STM32L4x6.svd"
-    },
-    {
-      "name": "uart_helloworld",
-      "cwd": "${workspaceRoot}",
-      "executable": "examples/uart_helloworld/build/m4_fw.elf",
-      "request": "launch",
-      "type": "cortex-debug",
-      "servertype": "openocd",
-      "device": "STM32L476RG",
-      "configFiles": ["interface/stlink.cfg", "target/stm32l4x.cfg"],
-      "svdFile": "./STM32L4x6.svd"
-    },
-    {
-      "name": "uart_echo",
-      "cwd": "${workspaceRoot}",
-      "executable": "examples/uart_echo/build/m4_fw.elf",
-      "request": "launch",
-      "type": "cortex-debug",
-      "servertype": "openocd",
-      "device": "STM32L476RG",
-      "configFiles": ["interface/stlink.cfg", "target/stm32l4x.cfg"],
-      "svdFile": "./STM32L4x6.svd"
+      "svdFile": "./L476RG/STM32L4x6.svd"
     }
   ]
 }
