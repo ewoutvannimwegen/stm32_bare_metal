@@ -48,9 +48,6 @@ void clk_init(void)
 
 	SystemCoreClockUpdate();
 
-	RCC->CCIPR |= RCC_CCIPR_USART2SEL_1; 
-	RCC->CCIPR &= ~RCC_CCIPR_USART2SEL_0; // HSI->USART2
-
 	RCC->APB1ENR1 |= RCC_APB1ENR1_USART2EN; // USART2 clock enabled
 	RCC->AHB2ENR |= RCC_AHB2ENR_GPIOAEN;	// GPIOA clock enabled
 }
