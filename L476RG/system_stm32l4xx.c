@@ -1,6 +1,6 @@
 /**
   ******************************************************************************
-  * @file    system_stm32l4xx.c
+  * @file    ../system_stm32l4xx.c
   * @author  MCD Application Team
   * @brief   CMSIS Cortex-M4 Device Peripheral Access Layer System Source File
   *
