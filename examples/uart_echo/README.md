@@ -6,4 +6,4 @@ Use [realterm](https://sourceforge.net/projects/realterm/) or some other serial 
 
 Settings: 9600 baud, 8-bit, 1 stop bit, parity: none.
 
-![](img/realterm_uart_echo.PNG)
+![](../../img/uart_echo.PNG)
