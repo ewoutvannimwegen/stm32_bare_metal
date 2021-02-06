@@ -36,8 +36,8 @@ BUILD_DIR = build
 ######################################
 # C sources
 C_SOURCES =  \
-Core/Src/main.c \
-Core/Src/system_stm32l4xx.c
+main.c \
+system_stm32l4xx.c
 
 # ASM sources
 ASM_SOURCES =  \
