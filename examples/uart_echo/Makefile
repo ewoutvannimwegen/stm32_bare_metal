@@ -126,7 +126,7 @@ CFLAGS += -MMD -MP -MF"$(@:%.o=%.d)"
 # LDFLAGS
 #######################################
 # link script
-LDSCRIPT = STM32L476RGTx_FLASH.ld
+LDSCRIPT = ../../STM32L476RGTx_FLASH.ld
 
 # libraries
 LIBS = -lc -lm -lnosys 
