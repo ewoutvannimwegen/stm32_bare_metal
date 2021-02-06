@@ -1,4 +1,9 @@
-Blinky LED using LD2 [PA5] which toggles every 1 sec.
-Timer 2 channel 1 is configured as a PWM out for LD2 [AF1].
-This way the LED is switch on and off by hardware.
-HSI16 is used as clock source for the system.
+USART2 TX [PA2] and RX [PA3] ST Link 
+
+Send data over UART using the DMA controller to copy the buffer to the TX register. 
+
+Use [realterm](https://sourceforge.net/projects/realterm/) or some other serial capture program to send data to the microcontroller. 
+
+Settings: 9600 baud, 8-bit, 1 stop bit, parity: none.
+
+![](img/realterm_helloworld.PNG)

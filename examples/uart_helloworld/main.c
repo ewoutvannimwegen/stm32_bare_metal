@@ -1,6 +1,6 @@
 #include "stm32l476xx.h"
 
-#define BUFFER_SIZE 17
+#define BUFFER_SIZE 16
 #define BAUD 9600
 
 uint8_t tx_buffer[BUFFER_SIZE] = "Hello, world!\r\n";
@@ -53,9 +53,6 @@ void clk_init(void)
 		;
 
 	SystemCoreClockUpdate();
-
-	RCC->CCIPR &= ~RCC_CCIPR_USART2SEL_0;
-	RCC->CCIPR |= RCC_CCIPR_USART2SEL_1; // HSI->USART2
 
 	RCC->AHB1ENR |= RCC_AHB1ENR_DMA1EN;		// DMA1 clock enabled
 	RCC->APB1ENR1 |= RCC_APB1ENR1_USART2EN; // USART2 clock enabled
