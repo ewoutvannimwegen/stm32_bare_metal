@@ -41,7 +41,7 @@ main.c \
 
 # ASM sources
 ASM_SOURCES =  \
-../startup_stm32mp157c_cm4.s
+../startup_stm32mp15xx.s 
 
 #######################################
 # binaries
@@ -84,6 +84,8 @@ AS_DEFS =
 
 # C defines
 C_DEFS =  \
+-DSTM32MP157Cxx \
+-DCORE_CM4 \
 -DHSE_VALUE=8000000 \
 -DHSE_STARTUP_TIMEOUT=100 \
 -DLSE_STARTUP_TIMEOUT=5000 \
@@ -97,10 +99,7 @@ C_DEFS =  \
 -DVDD_VALUE=3300 \
 -DPREFETCH_ENABLE=1 \
 -DINSTRUCTION_CACHE_ENABLE=1 \
--DDATA_CACHE_ENABLE=1 \
--DSTM32MP157xx \
--DCORE_CM4
-
+-DDATA_CACHE_ENABLE=1 
 
 # AS includes
 AS_INCLUDES = 
