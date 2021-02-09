@@ -2,9 +2,9 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "blinky",
+      "name": "program",
       "cwd": "${workspaceRoot}",
-      "executable": "L476RG/blinky/build/m4_fw.elf",
+      "executable": "L476RG/multi_adc2dma/build/m4_fw.elf",
       "request": "launch",
       "type": "cortex-debug",
       "servertype": "openocd",

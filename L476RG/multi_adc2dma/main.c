@@ -1,6 +1,6 @@
 #include "stm32l476xx.h"
 
-#define BUF_SIZE 2
+#define BUF_SIZE 20
 
 uint16_t raw_buf[BUF_SIZE];
 uint16_t cal_buf[BUF_SIZE];
@@ -70,16 +70,11 @@ void clk_init(void)
     RCC->AHB1ENR |= RCC_AHB1ENR_DMA1EN;
     RCC->APB2ENR |= RCC_APB2ENR_SYSCFGEN;
     RCC->AHB2ENR |= RCC_AHB2ENR_GPIOAEN;
-    RCC->AHB2ENR |= RCC_AHB2ENR_GPIOCEN;
     RCC->AHB2ENR |= RCC_AHB2ENR_ADCEN;
 }
 
 void io_init(void)
 {
-    /* LD2 [PA5] */
-    GPIOA->MODER &= ~GPIO_MODER_MODE5_1;
-    GPIOA->MODER |= GPIO_MODER_MODE5_0; // Output
-
     /* ADC1 INP5 [PA0] */
     GPIOA->MODER |= GPIO_MODER_MODE0_1 | GPIO_MODER_MODE0_0; // Analog mode
     GPIOA->ASCR |= GPIO_ASCR_ASC0;                           // Connect analog switch to ADC input
@@ -87,59 +82,41 @@ void io_init(void)
     /* ADC1 INP6 [PA1] */
     GPIOA->MODER |= GPIO_MODER_MODE1_1 | GPIO_MODER_MODE1_0; // Analog mode
     GPIOA->ASCR |= GPIO_ASCR_ASC1;                           // Connect analog switch to ADC input
-
-    /* User button [PC13] */
-    GPIOC->IDR |= GPIO_PUPDR_PUPD13_1;
-    GPIOC->IDR &= ~GPIO_PUPDR_PUPD13_0;                           // Pull-down
-    GPIOC->MODER &= ~(GPIO_MODER_MODE13_1 | GPIO_MODER_MODE13_0); // Input
-
-    /* EXTI13 ISR for User button [PC13] */
-    NVIC_EnableIRQ(EXTI15_10_IRQn);
-
-    SYSCFG->EXTICR[3] &= ~SYSCFG_EXTICR4_EXTI13;
-    SYSCFG->EXTICR[3] |= SYSCFG_EXTICR4_EXTI13_PC;
-
-    EXTI->IMR1 |= EXTI_IMR1_IM13;
-    EXTI->RTSR1 |= EXTI_RTSR1_RT13; // Rising edge trigger
 }
 
 void adc1_init(void)
 {
-    /* Voltage regulator */
     ADC1->CR = 0;                // Clear ADC1 control register
     ADC1->CR |= ADC_CR_ADVREGEN; // ADC voltage regulator enabled
     for (int i = 0; i < (SystemCoreClock / 8); i++)
         ; // Start-up time regulator
 
-    /* INP5 */
+    /* Rank 1: INP5 */
     ADC1->SMPR1 |=
         ADC_SMPR1_SMP5_2 | ADC_SMPR1_SMP5_1 | ADC_SMPR1_SMP5_0; // 640.5 cycles
     ADC1->SQR1 = 0;                                             // Clear conversion sequence register
     ADC1->SQR1 |= ADC_SQR1_SQ1_2 | ADC_SQR1_SQ1_0;              // 1st conversion is INP5
 
-    /* INP6 */
+    /* Rank 2: INP6 */
     ADC1->SMPR1 |=
         ADC_SMPR1_SMP5_2 | ADC_SMPR1_SMP5_1 | ADC_SMPR1_SMP5_0; // 640.5 cycles
     ADC1->SQR1 |= ADC_SQR1_SQ2_2 | ADC_SQR1_SQ2_1;              // 2nd conversion is INP6
 
-    ADC1->SQR1 |= ADC_SQR1_L_0; // 2 conversions
+    ADC1->SQR1 |= ADC_SQR1_L_0; // 2 conversion ranks
 
-    /* Interrupts */
     ADC1->IER |= ADC_IER_ADRDYIE; // ADC ready interrupt enabled
     NVIC_EnableIRQ(ADC1_2_IRQn);
 
-    /* Calibration */
+    ADC1->CFGR = 0; 
+    ADC1->CFGR |= ADC_CFGR_CONT; // Continuous conversion mode
+    ADC1->CFGR |= ADC_CFGR_OVRMOD; // Overrun enabled
+    ADC1->CFGR |= ADC_CFGR_DMAEN; // DMA enabled 
+    ADC1->CFGR |= ADC_CFGR_DMACFG; // Circular mode
+
     ADC1->CR |= ADC_CR_ADCAL; // Calibrate ADC1
     while (ADC1->CR & ADC_CR_ADCAL)
         ; // Wait till calibration is finished
 
-    /* DMA */
-    ADC1->CFGR |=
-        ADC_CFGR_DMAEN | ADC_CCR_DMACFG; // DMA enabled; Circular mode
-
-    /* Enable ADC1 */
-    ADC1->CFGR |= ADC_CFGR_CONT |
-                  ADC_CFGR_OVRMOD; // Continuous conversion; Overrun enabled
     ADC1->ISR |= ADC_ISR_ADRDY;    // Clear ADC ready bit
     ADC1->CR |= ADC_CR_ADEN;       // ADC1 enabled
 }
@@ -162,7 +139,7 @@ void dma1_init(void)
 
     DMA1_Channel1->CNDTR = BUF_SIZE;               // Data size
     DMA1_Channel1->CPAR = (uint32_t) & (ADC1->DR); // Peripheral address
-    DMA1_Channel1->CMAR = (uint32_t)raw_buf;       // Memory address
+    DMA1_Channel1->CMAR = (uint32_t)&raw_buf[0];     // Memory address
 
     DMA1_Channel1->CCR |= DMA_CCR_EN; // Channel1 enabled
 }
@@ -173,20 +150,11 @@ void error_handler(void)
         ;
 }
 
-void EXTI15_10_IRQHandler(void)
-{
-    if (EXTI->PR1 & EXTI_PR1_PIF13)
-    {
-        EXTI->PR1 |= EXTI_PR1_PIF13; // Clear flag
-        GPIOA->ODR ^= GPIO_ODR_OD5;  // Toggle LD2
-    }
-}
-
 void ADC1_2_IRQHandler(void)
 {
     if (ADC1->ISR & ADC_ISR_ADRDY)
     {
-        ADC1->ISR |= ADC_ISR_ADRDY; // Clear ADC ready bit
+        ADC1->ISR |= ADC_ISR_ADRDY; // Clear ADC ready flag
         ADC1->CR |= ADC_CR_ADSTART; // Start AD-Conversion
     }
 }
@@ -195,12 +163,18 @@ void DMA1_Channel1_IRQHandler(void)
 {
     if (DMA1->ISR & DMA_ISR_HTIF1)
     {
-        cal_buf[0] = raw_buf[0]; // Calibrate the 1st half
+        for (int i = 0; i < (BUF_SIZE / 2); i++)
+        {
+            cal_buf[i] = raw_buf[i]; // Calibrate the 1st half
+        }
     }
 
     if (DMA1->ISR & DMA_ISR_TCIF1)
     {
-        cal_buf[1] = raw_buf[1]; // Calibrate the 2nd half
+        for (int i = (BUF_SIZE / 2); i < BUF_SIZE; i++)
+        {
+            cal_buf[i] = raw_buf[i]; // Calibrate the 2nd half
+        }
     }
 
     if (DMA1->ISR & DMA_ISR_TEIF1)
