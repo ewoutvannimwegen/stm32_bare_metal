@@ -47,9 +47,7 @@
 /** @addtogroup STM32MP1xx_System_Private_Includes
   * @{
   */
-
-//#include "stm32mp1xx_hal.h"
-
+#include "stm32mp1xx.h"
 /**
   * @}
   */
