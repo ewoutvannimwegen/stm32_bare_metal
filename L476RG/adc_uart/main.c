@@ -1,6 +1,7 @@
 #include "stm32l476xx.h"
 
 #define BUF_SIZE 20
+#define BAUD 9600
 
 uint16_t raw_buf[BUF_SIZE];
 float cal_buf[BUF_SIZE];
@@ -8,18 +9,22 @@ float cal_buf[BUF_SIZE];
 void clk_init(void);
 void io_init(void);
 void adc1_init(void);
-void dma1_init(void);
+void dma1_ch1_init(void);
+void dma1_ch7_init(void);
+void usart2_init(void);
 void error_handler(void);
 
 int main(void)
 {
-    clk_init();
-    io_init();
-    adc1_init();
-    dma1_init();
+	clk_init();
+	io_init();
+	adc1_init();
+    dma1_ch1_init();
+	dma1_ch7_init();
+	usart2_init();
 
-    while (1)
-        ;
+	while (1)
+		;
 }
 
 void clk_init(void)
@@ -68,6 +73,7 @@ void clk_init(void)
 
     /* Peripheral clocks */
     RCC->AHB1ENR |= RCC_AHB1ENR_DMA1EN;
+	RCC->APB1ENR1 |= RCC_APB1ENR1_USART2EN; 
     RCC->APB2ENR |= RCC_APB2ENR_SYSCFGEN;
     RCC->AHB2ENR |= RCC_AHB2ENR_GPIOAEN;
     RCC->AHB2ENR |= RCC_AHB2ENR_ADCEN;
@@ -81,7 +87,15 @@ void io_init(void)
 
     /* ADC1 INP6 [PA1] */
     GPIOA->MODER |= GPIO_MODER_MODE1_1 | GPIO_MODER_MODE1_0; // Analog mode
-    GPIOA->ASCR |= GPIO_ASCR_ASC1;                           // Connect analog switch to ADC input
+    GPIOA->ASCR |= GPIO_ASCR_ASC1;   
+
+	/* USART2 TX [PA2] */
+	GPIOA->OTYPER &= ~GPIO_OTYPER_OT2;									  // Output push-pull
+	GPIOA->OSPEEDR &= ~(GPIO_OSPEEDR_OSPEED2_1 | GPIO_OSPEEDR_OSPEED2_0); // Low speed
+	GPIOA->MODER |= GPIO_MODER_MODE2_1;
+	GPIOA->MODER &= ~GPIO_MODER_MODE2_0; // Alternate function
+	GPIOA->AFR[0] = 0;
+	GPIOA->AFR[0] |= GPIO_AFRL_AFSEL2_2 | GPIO_AFRL_AFSEL2_1 | GPIO_AFRL_AFSEL2_0; // AF7: USART2_TX
 }
 
 void adc1_init(void)
@@ -121,7 +135,7 @@ void adc1_init(void)
     ADC1->CR |= ADC_CR_ADEN;       // ADC1 enabled
 }
 
-void dma1_init(void)
+void dma1_ch1_init(void)
 {
     DMA1_Channel1->CCR = 0;             // Reset control register
     DMA1_Channel1->CCR |= DMA_CCR_PL_1; // Priority high
@@ -144,10 +158,41 @@ void dma1_init(void)
     DMA1_Channel1->CCR |= DMA_CCR_EN; // Channel1 enabled
 }
 
+void dma1_ch7_init(void)
+{
+	DMA1_Channel7->CCR = 0;				// Reset control register
+	DMA1_Channel7->CCR |= DMA_CCR_PL_1; // Priority high
+	DMA1_Channel7->CCR |= DMA_CCR_MINC; // Memory increment mode enabled
+	DMA1_Channel7->CCR |= DMA_CCR_CIRC; // Circular mode enabled
+	DMA1_Channel7->CCR |= DMA_CCR_DIR;	// Memory->Peripheral
+	DMA1_Channel7->CCR |= DMA_CCR_MSIZE_0; // 16-bits memory size
+
+	DMA1_CSELR->CSELR |= (2 << DMA_CSELR_C7S_Pos); // Select USART2 TX
+
+	DMA1_Channel7->CCR |= DMA_CCR_TCIE; // Transfer complete ISR enabled
+	DMA1_Channel7->CCR |= DMA_CCR_TEIE; // Transfer error ISR enabled
+	NVIC_EnableIRQ(DMA1_Channel7_IRQn);
+
+	DMA1_Channel7->CNDTR = BUF_SIZE;				  // Data size
+	DMA1_Channel7->CPAR = (uint32_t) & (USART2->TDR); // Peripheral address
+	DMA1_Channel7->CMAR = (uint32_t)&raw_buf[0];	  // Memory address
+}
+
+void usart2_init(void)
+{
+	uint16_t usartdiv = (SystemCoreClock / BAUD); // Get baud rate divider
+	USART2->BRR = usartdiv;						  // Set baud rate divider
+	USART2->ICR |= USART_ICR_TCCF;				  // Clear transmission complete flag
+	USART2->CR1 |= USART_CR1_UE;				  // USART2 controller enabled
+	USART2->CR3 |= USART_CR3_DMAT;				  // DMA transmit enabled
+	USART2->CR1 |= USART_CR1_TE;				  // USART2 TX enabled
+	DMA1_Channel7->CCR |= DMA_CCR_EN;			  // DMA1 Channel7 enabled
+}
+
 void error_handler(void)
 {
-    while (1)
-        ;
+	while (1)
+		;
 }
 
 void ADC1_2_IRQHandler(void)
@@ -181,4 +226,17 @@ void DMA1_Channel1_IRQHandler(void)
     {
         error_handler();
     }
+}
+
+void DMA1_Channel7_IRQHandler(void)
+{
+	if (DMA1->ISR & DMA_ISR_TCIF7)
+	{
+		DMA1->IFCR |= DMA_IFCR_CTCIF7; // Clear flag
+	}
+
+	if (DMA1->ISR & DMA_ISR_TEIF7)
+	{
+		error_handler();
+	}
 }

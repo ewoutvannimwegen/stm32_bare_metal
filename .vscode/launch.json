@@ -4,7 +4,7 @@
     {
       "name": "program",
       "cwd": "${workspaceRoot}",
-      "executable": "L476RG/multi_adc2dma/build/m4_fw.elf",
+      "executable": "L476RG/adc_uart/build/m4_fw.elf",
       "request": "launch",
       "type": "cortex-debug",
       "servertype": "openocd",
