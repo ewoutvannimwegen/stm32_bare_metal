@@ -74,7 +74,7 @@ void usart2_init(void)
 {
 	uint16_t usartdiv = (SystemCoreClock / BAUD); // Get baud rate divider
 	USART2->BRR = usartdiv;						  // Set baud rate divider
-	USART2->CR1 |= USART_CR1_RXNEIE;			  // RX interrupt enabled
+	USART2->CR1 |= USART_CR1_RXNEIE;			  // RX interrupt enabled;
 	NVIC_EnableIRQ(USART2_IRQn);				  // Interrupt enabled
 	USART2->ICR |= USART_ICR_TCCF;				  // Clear transfer complete interrupt
 	USART2->CR1 |= USART_CR1_TE | USART_CR1_RE;	  // USART2 TX & RX enabled
@@ -86,7 +86,7 @@ void USART2_IRQHandler(void)
 	if (USART2->ISR & USART_ISR_RXNE)
 	{
 		char val = USART2->RDR; // Copy RX buffer to val
-		USART2->TDR = val; // Copy val to TX buffer
+		USART2->TDR = val;		// Copy val to TX buffer
 		while (!(USART2->ISR & USART_ISR_TC))
 			; // Wait till transmission complete
 	}
