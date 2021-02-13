@@ -1,7 +1,7 @@
 {
   "configurations": [
     {
-      "name": "STM32L476RG Windows",
+      "name": "L476RG",
       "includePath": [
         "Drivers/CMSIS/Device/ST/STM32L4xx/Include",
         "Drivers/CMSIS/Include"
