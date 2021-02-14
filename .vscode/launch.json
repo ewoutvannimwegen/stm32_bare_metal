@@ -4,7 +4,7 @@
     {
       "name": "L476RG",
       "cwd": "${workspaceRoot}",
-      "executable": "L476RG/alarm/build/m4_fw.elf",
+      "executable": "L476RG/lcd/build/m4_fw.elf",
       "request": "launch",
       "type": "cortex-debug",
       "servertype": "openocd",

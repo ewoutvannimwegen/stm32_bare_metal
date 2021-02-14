@@ -88,7 +88,6 @@ void alarm_a(void) {
 	EXTI->IMR1 |= EXTI_IMR1_IM18; // Event request not masked
     EXTI->RTSR1 |= EXTI_RTSR1_RT18; // Rising edge trigger enabled
 
-    RTC->CR |= RTC_CR_OSEL_0; // Alarm A output enabled
     RTC->CR |= RTC_CR_ALRAIE; // Alarm A interrupt enabled
     NVIC_EnableIRQ(RTC_Alarm_IRQn);
     RTC->CR |= RTC_CR_ALRAE;   // Alarm A enabled

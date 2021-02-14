@@ -1,4 +1,4 @@
-.cortex*
+.vscode/.cortex*
 L476RG/**/build
 L476RG/**/compile_commands.json
 L476RG/**/.clangd/
