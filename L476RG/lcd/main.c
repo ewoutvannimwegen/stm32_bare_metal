@@ -6,7 +6,9 @@ void alarm_a(void);
 void io_init(void);
 void lcd_init(void);
 void sync_cal(void);
-void delay_us(int cycles);
+void delay_us(int us);
+void write_lcd();
+void helloworld(void);
 
 int main(void)
 {
@@ -14,10 +16,8 @@ int main(void)
     rtc_init();
     io_init();
     lcd_init();
-
-    while (1)
-    {
-    };
+    helloworld();
+    while (1);
 }
 
 void clk_init(void)
@@ -133,7 +133,7 @@ void io_init(void)
 
     /* E: D6 [PB10] */
     GPIOB->OTYPER &= ~GPIO_OTYPER_OT10;                                     // Initial state LOW
-    GPIOB->OSPEEDR &= ~(GPIO_OSPEEDR_OSPEED10_1 | GPIO_OSPEEDR_OSPEED10_0); // Low speed
+    GPIOB->OSPEEDR |=  GPIO_OSPEEDR_OSPEED10_1 | GPIO_OSPEEDR_OSPEED10_0; // Very high speed
     GPIOB->MODER &= ~GPIO_MODER_MODE10_1;
     GPIOB->MODER |= GPIO_MODER_MODE10_0; // Output
 
@@ -146,102 +146,74 @@ void io_init(void)
 
 void lcd_init(void)
 {
-    delay_us(15100); // Vcc rises to 4.5V
+    delay_us(50000); // Vcc rises to 4.5V
 
     /* Instrucion 1: 0011 */
     GPIOA->ODR &= ~GPIO_ODR_OD10;
     GPIOB->ODR &= ~GPIO_ODR_OD3;
     GPIOB->ODR |= GPIO_ODR_OD4 | GPIO_ODR_OD5;
-
-    GPIOB->ODR |= GPIO_ODR_OD10;
-    delay_us(1);
-    GPIOB->ODR &= ~GPIO_ODR_OD10;
+    write_lcd();
     delay_us(4200);
 
     /* Instruction 2: 0011 */
     GPIOA->ODR &= ~GPIO_ODR_OD10;
     GPIOB->ODR &= ~GPIO_ODR_OD3;
     GPIOB->ODR |= GPIO_ODR_OD4 | GPIO_ODR_OD5;
-
-    GPIOB->ODR |= GPIO_ODR_OD10;
-    delay_us(1);
-    GPIOB->ODR &= ~GPIO_ODR_OD10;
-    delay_us(200);
+    write_lcd();
+    delay_us(1000);
 
     /* Instruction 3: 0011 */
     GPIOA->ODR &= ~GPIO_ODR_OD10;
     GPIOB->ODR &= ~GPIO_ODR_OD3;
     GPIOB->ODR |= GPIO_ODR_OD4 | GPIO_ODR_OD5;
+    write_lcd();
+    delay_us(1000);
 
-    GPIOB->ODR |= GPIO_ODR_OD10;
-    delay_us(1);
-    GPIOB->ODR &= ~GPIO_ODR_OD10;
-    delay_us(200);
-
-    /* Instruction 4: 0010 */
+    /* 4-bit lenght: 0010 */
     GPIOA->ODR &= ~GPIO_ODR_OD10;
-    GPIOB->ODR &= ~(GPIO_ODR_OD3 | GPIO_ODR_OD5);
-    GPIOB->ODR |= GPIO_ODR_OD4;
+    GPIOB->ODR &= ~(GPIO_ODR_OD3 | GPIO_ODR_OD4);
+    GPIOB->ODR |= GPIO_ODR_OD5;
+    write_lcd();
+    delay_us(1000);
 
-    GPIOB->ODR |= GPIO_ODR_OD10;
-    delay_us(1);
-    GPIOB->ODR &= ~GPIO_ODR_OD10;
-    delay_us(200);
-
-    /* Instruction 5: 0010 1000b */
+    /* Display lines: 0010 1000b */
     GPIOA->ODR &= ~GPIO_ODR_OD10;
-    GPIOB->ODR &= ~(GPIO_ODR_OD3 | GPIO_ODR_OD5);
-    GPIOB->ODR |= GPIO_ODR_OD4;
-    GPIOB->ODR |= GPIO_ODR_OD10;
-    GPIOB->ODR &= ~GPIO_ODR_OD10;
+    GPIOB->ODR &= ~(GPIO_ODR_OD3 | GPIO_ODR_OD4);
+    GPIOB->ODR |= GPIO_ODR_OD5;
+    write_lcd();
     GPIOA->ODR |= GPIO_ODR_OD10;
     GPIOB->ODR &= ~(GPIO_ODR_OD3 | GPIO_ODR_OD4 | GPIO_ODR_OD5);
+    write_lcd();
+    delay_us(1000);
 
-    GPIOB->ODR |= GPIO_ODR_OD10;
-    delay_us(1);
-    GPIOB->ODR &= ~GPIO_ODR_OD10;
-    delay_us(200);
-
-    /* Instruction 6: 0000 1000b */
+    /* Display off: 0000 1000b*/
     GPIOA->ODR &= ~GPIO_ODR_OD10;
     GPIOB->ODR &= ~(GPIO_ODR_OD3 | GPIO_ODR_OD4 | GPIO_ODR_OD5);
-    GPIOB->ODR |= GPIO_ODR_OD10;
-    GPIOB->ODR &= ~GPIO_ODR_OD10;
+    write_lcd();
     GPIOA->ODR |= GPIO_ODR_OD10;
     GPIOB->ODR &= ~(GPIO_ODR_OD3 | GPIO_ODR_OD5 | GPIO_ODR_OD4);
+    write_lcd();
+    delay_us(1000);
 
-    GPIOB->ODR |= GPIO_ODR_OD10;
-    delay_us(1);
-    GPIOB->ODR &= ~GPIO_ODR_OD10;
-    delay_us(200);
-
-    /* Instruction 7: 0000 0001b */
+    /* Clear display: 0000 0001b */
     GPIOA->ODR &= ~GPIO_ODR_OD10;
     GPIOB->ODR &= ~(GPIO_ODR_OD3 | GPIO_ODR_OD4 | GPIO_ODR_OD5);
-    GPIOB->ODR |= GPIO_ODR_OD10;
-    GPIOB->ODR &= ~GPIO_ODR_OD10;
+    write_lcd();
     GPIOA->ODR &= ~GPIO_ODR_OD10;
     GPIOB->ODR &= ~(GPIO_ODR_OD3 | GPIO_ODR_OD5);
     GPIOB->ODR |= GPIO_ODR_OD4;
+    write_lcd();
+    delay_us(1000);
 
-    GPIOB->ODR |= GPIO_ODR_OD10;
-    delay_us(1);
-    GPIOB->ODR &= ~GPIO_ODR_OD10;
-    delay_us(3000);
-
-    /* Instruction 8: 0000 0110b */
+    /* Entry mode: 0000 0110b */
     GPIOA->ODR &= ~GPIO_ODR_OD10;
     GPIOB->ODR &= ~(GPIO_ODR_OD3 | GPIO_ODR_OD4 | GPIO_ODR_OD5);
-    GPIOB->ODR |= GPIO_ODR_OD10;
-    GPIOB->ODR &= ~GPIO_ODR_OD10;
+    write_lcd();
     GPIOA->ODR &= ~GPIO_ODR_OD10;
     GPIOB->ODR |= GPIO_ODR_OD3 | GPIO_ODR_OD5;
     GPIOB->ODR &= ~GPIO_ODR_OD4;
-
-    GPIOB->ODR |= GPIO_ODR_OD10;
-    delay_us(1);
-    GPIOB->ODR &= ~GPIO_ODR_OD10;
-    delay_us(200);
+    write_lcd();
+    delay_us(1000);
 }
 
 void sync_cal(void)
@@ -251,10 +223,75 @@ void sync_cal(void)
         ; // Wait till sync
 }
 
-void delay_us(int cycles)
+void delay_us(int us)
 {
-    for (int i = 0; i < (cycles*(SystemCoreClock/8000000)); i++)
+    for (uint32_t i = 0; i < (us*(SystemCoreClock/8000000)); i++)
         ;
+}
+
+void write_lcd() {
+    GPIOB->ODR |= GPIO_ODR_OD10;
+    delay_us(1);
+    GPIOB->ODR &= ~GPIO_ODR_OD10;
+    delay_us(1);
+}
+
+void helloworld(void) {
+    /* Display on with blinking cursor: 0000 1111b*/
+    GPIOA->ODR &= ~GPIO_ODR_OD10;
+    GPIOB->ODR &= ~(GPIO_ODR_OD3 | GPIO_ODR_OD4 | GPIO_ODR_OD5);
+    write_lcd();
+    GPIOA->ODR |= GPIO_ODR_OD10;
+    GPIOB->ODR |= GPIO_ODR_OD3 | GPIO_ODR_OD5 | GPIO_ODR_OD4;
+    write_lcd();
+    delay_us(1000);
+
+    /* Entry mode: 0000 0110b */
+    GPIOA->ODR &= ~GPIO_ODR_OD10;
+    GPIOB->ODR &= ~(GPIO_ODR_OD3 | GPIO_ODR_OD4 | GPIO_ODR_OD5);
+    write_lcd();
+    GPIOA->ODR &= ~GPIO_ODR_OD10;
+    GPIOB->ODR |= GPIO_ODR_OD3 | GPIO_ODR_OD5;
+    GPIOB->ODR &= ~GPIO_ODR_OD4;
+    write_lcd();
+    delay_us(1000);
+
+    /* Write data: "H" 0100 1000b */
+    GPIOA->ODR |= GPIO_ODR_OD8;
+    GPIOA->ODR &= ~GPIO_ODR_OD10;
+    GPIOB->ODR |= GPIO_ODR_OD3;
+    GPIOB->ODR &= ~(GPIO_ODR_OD4 | GPIO_ODR_OD5);
+    write_lcd();
+    GPIOA->ODR |= GPIO_ODR_OD8;
+    GPIOA->ODR |= GPIO_ODR_OD10;
+    GPIOB->ODR &= ~(GPIO_ODR_OD3 | GPIO_ODR_OD5 | GPIO_ODR_OD4);
+    write_lcd();
+    delay_us(1000);
+
+    /* Write data: "e" 0110b 0101 */
+    GPIOA->ODR |= GPIO_ODR_OD8;
+    GPIOA->ODR &= ~GPIO_ODR_OD10;
+    GPIOB->ODR |= GPIO_ODR_OD3 | GPIO_ODR_OD5;
+    GPIOB->ODR &= ~GPIO_ODR_OD4;
+    write_lcd();
+    GPIOA->ODR |= GPIO_ODR_OD8;
+    GPIOA->ODR &= ~GPIO_ODR_OD10;
+    GPIOB->ODR |= GPIO_ODR_OD3 | GPIO_ODR_OD4;
+    GPIOB->ODR &= ~GPIO_ODR_OD5;
+    write_lcd();
+    delay_us(1000);
+
+    /* Write data: "y" 0111b 1001 */
+    GPIOA->ODR |= GPIO_ODR_OD8;
+    GPIOA->ODR &= ~GPIO_ODR_OD10;
+    GPIOB->ODR |= GPIO_ODR_OD3 | GPIO_ODR_OD5 | GPIO_ODR_OD4;
+    write_lcd();
+    GPIOA->ODR |= GPIO_ODR_OD8;
+    GPIOA->ODR |= GPIO_ODR_OD10;
+    GPIOB->ODR &= ~(GPIO_ODR_OD3 | GPIO_ODR_OD5);
+    GPIOB->ODR |= GPIO_ODR_OD4;
+    write_lcd();
+    delay_us(1000);
 }
 
 void RTC_Alarm_IRQHandler(void)

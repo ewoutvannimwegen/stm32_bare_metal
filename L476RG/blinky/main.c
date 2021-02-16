@@ -28,7 +28,7 @@ int main(void) {
 	GPIOA->MODER |= GPIO_MODER_MODE5_0; // Output
 
 	while(1) {
-		for(int i = 0; i < (SystemCoreClock/8); i++); // Sleep 1 sec
+		for(uint32_t i = 0; i < (SystemCoreClock/8); i++); // Sleep 1 sec
 		GPIOA->ODR ^= GPIO_ODR_OD5; // Toggle LD2
 	}
 }
