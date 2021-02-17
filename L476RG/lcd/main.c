@@ -1,5 +1,19 @@
 #include "stm32l476xx.h"
 
+#define PORT_DB7 GPIOA->ODR
+#define PORT_DB6 GPIOB->ODR
+#define PORT_DB5 GPIOB->ODR
+#define PORT_DB4 GPIOB->ODR
+#define PORT_E GPIOB->ODR
+#define PORT_RS GPIOA->ODR
+
+#define DB7 GPIO_ODR_OD10
+#define DB6 GPIO_ODR_OD3
+#define DB5 GPIO_ODR_OD5
+#define DB4 GPIO_ODR_OD4
+#define E GPIO_ODR_OD10
+#define RS GPIO_ODR_OD8
+
 void clk_init(void);
 void rtc_init(void);
 void alarm_a(void);
@@ -7,16 +21,22 @@ void io_init(void);
 void lcd_init(void);
 void sync_cal(void);
 void delay_us(int us);
-void write_lcd();
-void helloworld(void);
+void trigger_lcd();
+void lcd_write_8(uint8_t data, int rs);
+void lcd_write_str(uint8_t data[], int size);
 
 int main(void)
 {
+    uint8_t data[13] = "Hello, world!";
+
     clk_init();
     rtc_init();
     io_init();
     lcd_init();
-    helloworld();
+
+    lcd_write_8(15, 0); // Display on with blinking cursor
+    lcd_write_8(6, 0); // Entry mode
+    lcd_write_str(data, sizeof(data));
     while (1);
 }
 
@@ -148,72 +168,18 @@ void lcd_init(void)
 {
     delay_us(50000); // Vcc rises to 4.5V
 
-    /* Instrucion 1: 0011 */
-    GPIOA->ODR &= ~GPIO_ODR_OD10;
-    GPIOB->ODR &= ~GPIO_ODR_OD3;
-    GPIOB->ODR |= GPIO_ODR_OD4 | GPIO_ODR_OD5;
-    write_lcd();
-    delay_us(4200);
+    lcd_write_8(48, 0); 
 
-    /* Instruction 2: 0011 */
-    GPIOA->ODR &= ~GPIO_ODR_OD10;
-    GPIOB->ODR &= ~GPIO_ODR_OD3;
-    GPIOB->ODR |= GPIO_ODR_OD4 | GPIO_ODR_OD5;
-    write_lcd();
-    delay_us(1000);
+    delay_us(4100);
+    
+    lcd_write_8(48, 0); 
+    lcd_write_8(48, 0); 
+    lcd_write_8(32, 0); 
 
-    /* Instruction 3: 0011 */
-    GPIOA->ODR &= ~GPIO_ODR_OD10;
-    GPIOB->ODR &= ~GPIO_ODR_OD3;
-    GPIOB->ODR |= GPIO_ODR_OD4 | GPIO_ODR_OD5;
-    write_lcd();
-    delay_us(1000);
-
-    /* 4-bit lenght: 0010 */
-    GPIOA->ODR &= ~GPIO_ODR_OD10;
-    GPIOB->ODR &= ~(GPIO_ODR_OD3 | GPIO_ODR_OD4);
-    GPIOB->ODR |= GPIO_ODR_OD5;
-    write_lcd();
-    delay_us(1000);
-
-    /* Display lines: 0010 1000b */
-    GPIOA->ODR &= ~GPIO_ODR_OD10;
-    GPIOB->ODR &= ~(GPIO_ODR_OD3 | GPIO_ODR_OD4);
-    GPIOB->ODR |= GPIO_ODR_OD5;
-    write_lcd();
-    GPIOA->ODR |= GPIO_ODR_OD10;
-    GPIOB->ODR &= ~(GPIO_ODR_OD3 | GPIO_ODR_OD4 | GPIO_ODR_OD5);
-    write_lcd();
-    delay_us(1000);
-
-    /* Display off: 0000 1000b*/
-    GPIOA->ODR &= ~GPIO_ODR_OD10;
-    GPIOB->ODR &= ~(GPIO_ODR_OD3 | GPIO_ODR_OD4 | GPIO_ODR_OD5);
-    write_lcd();
-    GPIOA->ODR |= GPIO_ODR_OD10;
-    GPIOB->ODR &= ~(GPIO_ODR_OD3 | GPIO_ODR_OD5 | GPIO_ODR_OD4);
-    write_lcd();
-    delay_us(1000);
-
-    /* Clear display: 0000 0001b */
-    GPIOA->ODR &= ~GPIO_ODR_OD10;
-    GPIOB->ODR &= ~(GPIO_ODR_OD3 | GPIO_ODR_OD4 | GPIO_ODR_OD5);
-    write_lcd();
-    GPIOA->ODR &= ~GPIO_ODR_OD10;
-    GPIOB->ODR &= ~(GPIO_ODR_OD3 | GPIO_ODR_OD5);
-    GPIOB->ODR |= GPIO_ODR_OD4;
-    write_lcd();
-    delay_us(1000);
-
-    /* Entry mode: 0000 0110b */
-    GPIOA->ODR &= ~GPIO_ODR_OD10;
-    GPIOB->ODR &= ~(GPIO_ODR_OD3 | GPIO_ODR_OD4 | GPIO_ODR_OD5);
-    write_lcd();
-    GPIOA->ODR &= ~GPIO_ODR_OD10;
-    GPIOB->ODR |= GPIO_ODR_OD3 | GPIO_ODR_OD5;
-    GPIOB->ODR &= ~GPIO_ODR_OD4;
-    write_lcd();
-    delay_us(1000);
+    lcd_write_8(40, 0); // Set 4-bit instructions
+    lcd_write_8(8, 0); // Display off
+    lcd_write_8(1, 0); // Clear display
+    lcd_write_8(6, 0); // Entry mode
 }
 
 void sync_cal(void)
@@ -229,69 +195,44 @@ void delay_us(int us)
         ;
 }
 
-void write_lcd() {
-    GPIOB->ODR |= GPIO_ODR_OD10;
+void trigger_lcd() {
+    GPIOB->ODR |= GPIO_ODR_OD10; // LCD trigger enabled
     delay_us(1);
-    GPIOB->ODR &= ~GPIO_ODR_OD10;
+    GPIOB->ODR &= ~GPIO_ODR_OD10; // LCD trigger disabled
     delay_us(1);
 }
 
-void helloworld(void) {
-    /* Display on with blinking cursor: 0000 1111b*/
-    GPIOA->ODR &= ~GPIO_ODR_OD10;
-    GPIOB->ODR &= ~(GPIO_ODR_OD3 | GPIO_ODR_OD4 | GPIO_ODR_OD5);
-    write_lcd();
-    GPIOA->ODR |= GPIO_ODR_OD10;
-    GPIOB->ODR |= GPIO_ODR_OD3 | GPIO_ODR_OD5 | GPIO_ODR_OD4;
-    write_lcd();
-    delay_us(1000);
+void lcd_write_8(uint8_t data, int rs) {
+    PORT_RS &= ~RS;
+    if(rs >= 1) PORT_RS |= RS;
 
-    /* Entry mode: 0000 0110b */
-    GPIOA->ODR &= ~GPIO_ODR_OD10;
-    GPIOB->ODR &= ~(GPIO_ODR_OD3 | GPIO_ODR_OD4 | GPIO_ODR_OD5);
-    write_lcd();
-    GPIOA->ODR &= ~GPIO_ODR_OD10;
-    GPIOB->ODR |= GPIO_ODR_OD3 | GPIO_ODR_OD5;
-    GPIOB->ODR &= ~GPIO_ODR_OD4;
-    write_lcd();
-    delay_us(1000);
+    PORT_DB7 &= ~DB7;
+    if(data & 1<<7) PORT_DB7 |= DB7;
+    PORT_DB6 &= ~DB6;
+    if(data & 1<<6) PORT_DB6 |= DB6;
+    PORT_DB5 &= ~DB5;
+    if(data & 1<<5) PORT_DB5 |= DB5;
+    PORT_DB4 &= ~DB4;
+    if(data & 1<<4) PORT_DB4 |= DB4;
+    
+    trigger_lcd();
 
-    /* Write data: "H" 0100 1000b */
-    GPIOA->ODR |= GPIO_ODR_OD8;
-    GPIOA->ODR &= ~GPIO_ODR_OD10;
-    GPIOB->ODR |= GPIO_ODR_OD3;
-    GPIOB->ODR &= ~(GPIO_ODR_OD4 | GPIO_ODR_OD5);
-    write_lcd();
-    GPIOA->ODR |= GPIO_ODR_OD8;
-    GPIOA->ODR |= GPIO_ODR_OD10;
-    GPIOB->ODR &= ~(GPIO_ODR_OD3 | GPIO_ODR_OD5 | GPIO_ODR_OD4);
-    write_lcd();
-    delay_us(1000);
+    PORT_DB7 &= ~DB7;
+    if(data & 1<<3) PORT_DB7 |= DB7;
+    PORT_DB6 &= ~DB6;
+    if(data & 1<<2) PORT_DB6 |= DB6;
+    PORT_DB5 &= ~DB5;
+    if(data & 1<<1) PORT_DB5 |= DB5;
+    PORT_DB4 &= ~DB4;
+    if(data & 1<<0) PORT_DB4 |= DB4;
 
-    /* Write data: "e" 0110b 0101 */
-    GPIOA->ODR |= GPIO_ODR_OD8;
-    GPIOA->ODR &= ~GPIO_ODR_OD10;
-    GPIOB->ODR |= GPIO_ODR_OD3 | GPIO_ODR_OD5;
-    GPIOB->ODR &= ~GPIO_ODR_OD4;
-    write_lcd();
-    GPIOA->ODR |= GPIO_ODR_OD8;
-    GPIOA->ODR &= ~GPIO_ODR_OD10;
-    GPIOB->ODR |= GPIO_ODR_OD3 | GPIO_ODR_OD4;
-    GPIOB->ODR &= ~GPIO_ODR_OD5;
-    write_lcd();
+    trigger_lcd();
+    PORT_RS &= ~RS;
     delay_us(1000);
+}
 
-    /* Write data: "y" 0111b 1001 */
-    GPIOA->ODR |= GPIO_ODR_OD8;
-    GPIOA->ODR &= ~GPIO_ODR_OD10;
-    GPIOB->ODR |= GPIO_ODR_OD3 | GPIO_ODR_OD5 | GPIO_ODR_OD4;
-    write_lcd();
-    GPIOA->ODR |= GPIO_ODR_OD8;
-    GPIOA->ODR |= GPIO_ODR_OD10;
-    GPIOB->ODR &= ~(GPIO_ODR_OD3 | GPIO_ODR_OD5);
-    GPIOB->ODR |= GPIO_ODR_OD4;
-    write_lcd();
-    delay_us(1000);
+void lcd_write_str(uint8_t data[], int size) {
+    for(int i = 0; i < size; i++) lcd_write_8(data[i], 1);
 }
 
 void RTC_Alarm_IRQHandler(void)
