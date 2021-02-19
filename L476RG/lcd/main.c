@@ -1,42 +1,40 @@
 #include "stm32l476xx.h"
+#include "main.h"
 
-#define PORT_DB7 GPIOA->ODR
-#define PORT_DB6 GPIOB->ODR
-#define PORT_DB5 GPIOB->ODR
-#define PORT_DB4 GPIOB->ODR
-#define PORT_E GPIOB->ODR
-#define PORT_RS GPIOA->ODR
-
-#define DB7 GPIO_ODR_OD10
-#define DB6 GPIO_ODR_OD3
-#define DB5 GPIO_ODR_OD5
-#define DB4 GPIO_ODR_OD4
-#define E GPIO_ODR_OD10
-#define RS GPIO_ODR_OD8
+uint32_t date_reg = 0; // Store copy of date register
+uint32_t time_reg = 0; // Store copy of time register
+uint8_t date[5]; 
+uint8_t time[8]; 
 
 void clk_init(void);
 void rtc_init(void);
+void wakeup(void);
 void alarm_a(void);
 void io_init(void);
 void lcd_init(void);
 void sync_cal(void);
+void sync_lcd(void);
 void delay_us(int us);
 void trigger_lcd();
 void lcd_write_8(uint8_t data, int rs);
 void lcd_write_str(uint8_t data[], int size);
+void move_cursor(int step);
+uint8_t m_bits(uint8_t val);
+uint8_t l_bits(uint8_t val);
 
 int main(void)
-{
-    uint8_t data[13] = "Hello, world!";
+{    
+    date[2] = ':';
+    time[2] = ':';
+    time[5] = ':';
 
     clk_init();
     rtc_init();
     io_init();
     lcd_init();
-
-    lcd_write_8(15, 0); // Display on with blinking cursor
+    lcd_write_8(12, 0); // Display on, cursor off
     lcd_write_8(6, 0); // Entry mode
-    lcd_write_str(data, sizeof(data));
+
     while (1);
 }
 
@@ -88,32 +86,43 @@ void rtc_init(void)
     RTC->PRER |= (255 << RTC_PRER_PREDIV_S_Pos); // Sync prescaler: 255+1=256
     RTC->CR |= RTC_CR_COSEL;                     // Calibration output is 1Hz
 
+    //TODO fix years can't set these.
     RTC->TR = 0;             // Clear time register
     RTC->DR |= RTC_DR_YT_1;  // Year tens: 2
     RTC->DR |= RTC_DR_YU_0;  // Years units: 1
     RTC->DR |= RTC_DR_WDU_0; // Week day: monday
     RTC->DR |= RTC_DR_MU_0;  // Month: 1
     RTC->DR |= RTC_DR_DU_0;  // Day: 1
-
+    
+    wakeup();
     alarm_a();
 
     RTC->ISR &= ~RTC_ISR_INIT; // Init mode disabled
     sync_cal();
 }
 
+void wakeup(void) {
+    while(!(RTC->ISR & RTC_ISR_WUTWF)); // Wait till update allowed
+    RTC->CR |= RTC_CR_WUCKSEL_2; // 1Hz   
+    RTC->WUTR = 1; // Auto-reload value
+    RTC->ISR &= ~RTC_ISR_WUTWF; // Wakeup update not allowed
+    EXTI->IMR1 |= EXTI_IMR1_IM20;   // Event request not masked
+    EXTI->RTSR1 |= EXTI_RTSR1_RT20; // Rising edge trigger enabled
+    RTC->CR |= RTC_CR_WUTIE; // Wakeup timer interrupt enabled
+    NVIC_EnableIRQ(RTC_WKUP_IRQn); 
+    RTC->CR |= RTC_CR_WUTE; // Wakeup timer enabled  
+}
+
 void alarm_a(void)
 {
-    RTC->ISR |= RTC_ISR_ALRAWF;     // Alarm A update allowed
+    while(!(RTC->ISR & RTC_ISR_ALRAWF)); // Wait till update allowed
     RTC->ALRMAR = 0;                // Clear Alarm A register
     RTC->ALRMAR |= RTC_ALRMAR_MSK4; // Day don't care
     RTC->ALRMAR |= RTC_ALRMAR_MSK3; // Hours don't care
     RTC->ALRMAR |= RTC_ALRMAR_MSK2; // Minutes don't care
-    RTC->ALRMAR |= RTC_ALRMAR_ST_0; // Seconds units: 10
     RTC->ISR &= ~RTC_ISR_ALRAWF;    // Alarm A update not allowed
-
     EXTI->IMR1 |= EXTI_IMR1_IM18;   // Event request not masked
     EXTI->RTSR1 |= EXTI_RTSR1_RT18; // Rising edge trigger enabled
-
     RTC->CR |= RTC_CR_ALRAIE; // Alarm A interrupt enabled
     NVIC_EnableIRQ(RTC_Alarm_IRQn);
     RTC->CR |= RTC_CR_ALRAE; // Alarm A enabled
@@ -167,15 +176,11 @@ void io_init(void)
 void lcd_init(void)
 {
     delay_us(50000); // Vcc rises to 4.5V
-
     lcd_write_8(48, 0); 
-
     delay_us(4100);
-    
     lcd_write_8(48, 0); 
     lcd_write_8(48, 0); 
     lcd_write_8(32, 0); 
-
     lcd_write_8(40, 0); // Set 4-bit instructions
     lcd_write_8(8, 0); // Display off
     lcd_write_8(1, 0); // Clear display
@@ -187,6 +192,31 @@ void sync_cal(void)
     RTC->ISR &= ~(RTC_ISR_RSF); // Clear the sync flag
     while (!(RTC->ISR & RTC_ISR_RSF))
         ; // Wait till sync
+}
+
+void sync_lcd(void) {
+    lcd_write_8(1, 0); // Clear display
+
+    date_reg = RTC->DR; // Copy date register
+    sync_cal();
+    time_reg = RTC->TR; // Copy time register
+    sync_cal();
+
+    date[0] = m_bits((uint8_t)(date_reg))+48; // Day tens
+    date[1] = l_bits((uint8_t)(date_reg))+48; // Day units
+    date[3] = (m_bits(((uint8_t)(date_reg >> 8)) << 3) >> 3)+48; // Month tens
+    date[4] = l_bits((uint8_t)(date_reg >> 8))+48; // Month units
+
+    lcd_write_str(date, sizeof(date)); // Send date to LCD
+    move_cursor(7); // Move cursor 7 steps to the right
+
+    time[0] = m_bits((uint8_t)(time_reg >> 16))+48; // Hour tens
+    time[1] = l_bits((uint8_t)(time_reg >> 16))+48; // Hour units
+    time[3] = m_bits((uint8_t)(time_reg >> 8))+48; // Min tens
+    time[4] = l_bits((uint8_t)(time_reg >> 8))+48; // Min units
+    time[6] = m_bits((uint8_t)(time_reg))+48; // Sec tens
+    time[7] = l_bits((uint8_t)(time_reg))+48; // Sec units
+    lcd_write_str(time, sizeof(time)); // Send time to LCD
 }
 
 void delay_us(int us)
@@ -235,6 +265,28 @@ void lcd_write_str(uint8_t data[], int size) {
     for(int i = 0; i < size; i++) lcd_write_8(data[i], 1);
 }
 
+void move_cursor(int step) {
+    for(int i = 0; i < step; i++) lcd_write_8(20, 0); 
+}
+
+uint8_t m_bits(uint8_t val) {
+    val = (val >> 4);
+    return val;
+}
+
+uint8_t l_bits(uint8_t val) {
+    val = (val << 4);
+    val = (val >> 4);
+    return val;
+}
+
+void RTC_WKUP_IRQHandler(void) {
+    if(RTC->ISR & RTC_ISR_WUTF) {
+        RTC->ISR &= ~RTC_ISR_WUTF; // Clear flag
+        sync_lcd();
+    }
+}
+
 void RTC_Alarm_IRQHandler(void)
 {
     if (RTC->ISR & RTC_ISR_ALRAF)
@@ -243,3 +295,4 @@ void RTC_Alarm_IRQHandler(void)
         GPIOA->ODR ^= GPIO_ODR_OD5; // Toggle LD2
     }
 }
+

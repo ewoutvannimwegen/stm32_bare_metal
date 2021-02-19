@@ -1,0 +1,13 @@
+#define PORT_DB7 GPIOA->ODR
+#define PORT_DB6 GPIOB->ODR
+#define PORT_DB5 GPIOB->ODR
+#define PORT_DB4 GPIOB->ODR
+#define PORT_E GPIOB->ODR
+#define PORT_RS GPIOA->ODR
+
+#define DB7 GPIO_ODR_OD10
+#define DB6 GPIO_ODR_OD3
+#define DB5 GPIO_ODR_OD5
+#define DB4 GPIO_ODR_OD4
+#define E GPIO_ODR_OD10
+#define RS GPIO_ODR_OD8
