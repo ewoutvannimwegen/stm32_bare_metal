@@ -31,13 +31,21 @@ OPT = -Og
 # Build path
 BUILD_DIR = build
 
+# Source path
+SRC_DIR = src
+
+# Include path
+INC_DIR = inc
+
 ######################################
 # source
 ######################################
 # C sources
 C_SOURCES =  \
-main.c \
-../system_stm32l4xx.c
+../system_stm32l4xx.c \
+$(SRC_DIR)/main.c \
+$(SRC_DIR)/isr.c \
+$(SRC_DIR)/init.c 
 
 # ASM sources
 ASM_SOURCES =  \
@@ -106,7 +114,8 @@ AS_INCLUDES =
 # C includes
 C_INCLUDES =  \
 -I ../../Drivers/CMSIS/Device/ST/STM32L4xx/Include \
--I ../../Drivers/CMSIS/Include 
+-I ../../Drivers/CMSIS/Include \
+-I $(INC_DIR) 
 
 # compile gcc flags
 ASFLAGS = $(MCU) $(AS_DEFS) $(AS_INCLUDES) $(OPT) -Wall -fdata-sections -ffunction-sections
