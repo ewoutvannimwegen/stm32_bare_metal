@@ -4,7 +4,8 @@
       "name": "L476RG",
       "includePath": [
         "Drivers/CMSIS/Device/ST/STM32L4xx/Include",
-        "Drivers/CMSIS/Include"
+        "Drivers/CMSIS/Include",
+        "L476RG/lcd/inc"
       ],
       "defines": [
         "_DEBUG",
