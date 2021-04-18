@@ -1,0 +1,1 @@
+This application is based upon the amazing [lightweight stm32 usb library](https://github.com/dmitrystu/libusb_stm32).

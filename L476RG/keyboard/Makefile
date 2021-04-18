@@ -31,13 +31,21 @@ OPT = -Og
 # Build path
 BUILD_DIR = build
 
+# Source path
+SRC_DIR = src
+
+# Include path
+INC_DIR = inc
+
 ######################################
 # source
 ######################################
 # C sources
 C_SOURCES =  \
-main.c \
-../system_stm32l4xx.c
+../system_stm32l4xx.c \
+$(SRC_DIR)/cdc_loop.c \
+$(SRC_DIR)/usbd_stm32l476_otgfs.c \
+$(SRC_DIR)/usbd_core.c 
 
 # ASM sources
 ASM_SOURCES =  \
@@ -97,7 +105,9 @@ C_DEFS =  \
 -DPREFETCH_ENABLE=1 \
 -DINSTRUCTION_CACHE_ENABLE=1 \
 -DDATA_CACHE_ENABLE=1 \
--DSTM32L476xx
+-DSTM32L4 \
+-DSTM32L476xx \
+-DUSBD_SOF_DISABLED
 
 
 # AS includes
@@ -106,7 +116,9 @@ AS_INCLUDES =
 # C includes
 C_INCLUDES =  \
 -I ../../Drivers/CMSIS/Device/ST/STM32L4xx/Include \
--I ../../Drivers/CMSIS/Include 
+-I ../../Drivers/CMSIS/Include \
+-I $(INC_DIR) 
+
 # compile gcc flags
 ASFLAGS = $(MCU) $(AS_DEFS) $(AS_INCLUDES) $(OPT) -Wall -fdata-sections -ffunction-sections
 
@@ -178,10 +190,10 @@ flash: all
 	openocd -f interface/stlink.cfg -f target/stm32l4x.cfg -c "program $(BUILD_DIR)/$(TARGET).elf verify reset exit"
 
 debug:
-	openocd -f interface/stlink.cfg -f target/stm32l4x.cfg -c "init; reset halt"
+	openocd -f interface/stlink-v2-1.cfg -f target/stm32l4x.cfg -c "init; reset halt"
 
 erase:
-	openocd -f interface/stlink.cfg -f target/stm32l4x.cfg -c "init; reset halt; stm32l4x mass_erase 0; exit"
+	openocd -f interface/stlink-v2-1.cfg -f target/stm32l4x.cfg -c "init; reset halt; stm32l4x mass_erase 0; exit"
 
 #######################################
 # dependencies

@@ -5,7 +5,8 @@
       "includePath": [
         "Drivers/CMSIS/Device/ST/STM32L4xx/Include",
         "Drivers/CMSIS/Include",
-        "L476RG/lcd/inc"
+        "L476RG/lcd/inc",
+        "L476RG/keyboard/inc"
       ],
       "defines": [
         "_DEBUG",
@@ -24,7 +25,9 @@
         "PREFETCH_ENABLE=1",
         "INSTRUCTION_CACHE_ENABLE=1",
         "DATA_CACHE_ENABLE=1",
-        "STM32L476xx"
+        "STM32L4",
+        "STM32L476xx",
+        "USBD_SOF_DISABLED"
       ],
       "compilerPath": "${env:ARM_DIR}/arm-none-eabi-gcc.exe",
       "intelliSenseMode": "gcc-arm",
@@ -37,7 +40,8 @@
       "includePath": [
         "Drivers/CMSIS/Device/ST/STM32L4xx/Include",
         "Drivers/CMSIS/Include",
-        "L476RG/lcd/inc"
+        "L476RG/lcd/inc",
+        "L476RG/keyboard/inc"
       ],
       "defines": [
         "_DEBUG",
